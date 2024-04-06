@@ -1,0 +1,344 @@
+---
+title: "Are theft related crimes increasing in New Zealand?"
+author: "Chin Wei Chung (77350057)"
+date: "05-18-2023"
+output:
+  pdf_document
+  
+---
+```{rsetup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(viridis)
+
+
+```
+
+
+# Introduction
+This assignment's main motive it to find whether theft related offenses are becoming more common in New Zealand. New Zealand has always been ranked on the top 5 for being one of the safest countries in the world, based on surveys done by Global Peace Index, New Zealand was able to maintain top 5 statues since 2008 and even achieving second most safest in 2022.
+
+By using the available data gathered from the New Zealand police data website we can interpret and make assumptions on the theft related offenses on New Zealand. To do so, we would use the demographic variables such as age-group, sex, ethnicity and many more. By using this data we can summarize and make plots of the information gathered.
+
+
+# Methods and Analysis
+
+## 1. loading and arranging/cleaning the datasets
+```{r reading the csv files of the datasets used, include=FALSE}
+
+data_1 <- read.csv("demographic.csv") #dataset for victimisation, age-group, year/month, ethnicity & sex
+data_2 <- read.csv("police2.csv") #dataset for police district, same date but different csv files
+
+head(data_1)
+str(data_1)
+
+
+head(data_2)
+str(data_2)
+
+
+```
+
+Firstly, i have only chosen a few variables that i would use for my analysis that is relevant. Taking into consideration of the limitation of information available, i was able to gather 2 particular csv files i can use which i have already named above as **data_1** representing variables like 'age-group', 'sex', 'year', 'ethnicity' and 'victimisations' these variables are main used to identify the characteristics that these offenders have while, in total there are 6 variables inside the **data_1** dataset. While **'data_2'** is used for the 'police district' variable which mainly indicates the various districts present in New Zealand as a whole such as Canterbury, Auckland, wellington and many more. **data_2** has 5 variables but mainly only the  variables of "Police district" and "Year" would be used to compare with the data in **data_1**.
+
+Both datasets are from the same time-frame. The datasets i have downloaded contains information from the year 2015 to 2022, The reason i have decided to exclude the year 2014 and 2023 is because they are incomplete data's recorded.regardless of this, i have decided to minimizes my analysis to only include observations recorded from the year 2017 to 2021 so that more in-depth analysis can be made and the margin for error would be less.
+
+In the code chunk above i utilized the **head()** and  **str()** function to assist in arranging/cleaning the datasets. the **head** function is used to display the first few rows of a dataset (by default, the first 6 rows). It provides a quick look at the structure and values of your data. The **str** function is used to display the structure of an object, like a data frame or a list. It shows the type of each variable (column) and a brief overview of their content. It is a helpful way to quickly understand the types of variables in your dataset, along with the dimensions (number of rows and columns) of the dataset.
+
+## 2. Removing NA or non-applicable categorical or numerical data.
+
+Before doing any in-depth analysis of the datasets for measuring these variables relationship with each other in terms of how 1 variables affect another in terms of the increase in theft related offenses, we first have to clean the datasets. The reason for these is because we would not have an accurate display of information if our dataset contains many outliers or "non-applicable" data's or NA for short. In R many ways are possible to clean data's in these datasets the most well-known would be to use the **tidyverse** package, but instead of tidyverse i would use the **unique**, **as.factor** and **levels** function.
+
+The **unique** function returns a vector of unique elements in a given vector or data frame column. It is used to find the distinct values of a variable. This can be helpful when you want to know the different categories in a categorical variable or to understand the variety of values in a numerical variable. The **levels** function is used to display the levels (distinct categories) of a factor variable. If the input variable is not a factor, the function returns NULL. Levels are used to represent different categories in a factor variable. The **as.factor** function is used to convert a variable to a factor variable. Factor variables are categorical variables that can be either ordinal (with an order, like high/medium/low) or nominal (without order, like male/female).
+
+```{r cleaning and sorting the variables, include=FALSE}
+
+#for the Age.Group variables in data_1
+unique(data_1$Age.Group)
+data_1$Age.Group <- as.factor(data_1$Age.Group)
+class(data_1$Age.Group)
+
+levels(data_1$Age.Group)
+data_1$Age.Group <- factor((data_1$Age.Group),
+                           levels = c("0-4", "5-9", "10-14", "15-19", "20-24", 
+                                      "25-29", "30-34", "35-39", "40-44", 
+                                      "45-49", "50-54", "55-59","60-64", 
+                                      "65-69", "70-74", "75-79",
+                                      "80yearsorover"))
+levels(data_1$Age.Group)
+```
+
+```{r cleaning and sorting the year variables, include=FALSE}
+#for the Year Variable in data_1
+unique(data_1$Year)
+class(data_1$Year)
+data_1$Year <- as.factor(data_1$Year)
+class(data_1$SEX)
+
+
+data_1$Year <- factor((data_1$Year),
+                           levels = c("2014", "2015", "2016", "2017", "2018",
+                                      "2019", "2020", "2021", "2022", "2023"))
+levels(data_1$Year)
+```
+
+```{r cleaning and sorting the sex variables, include=FALSE}
+#for the Sex variable in data_1
+unique(data_1$SEX)
+data_1$SEX <- as.factor(data_1$SEX)
+class(data_1$SEX)
+
+
+data_1$SEX <- factor((data_1$SEX),
+                           levels = c("Male", "Female"))
+levels(data_1$SEX)
+
+
+```
+
+```{r cleaning and sorting the ethnicity variables, include=FALSE}
+#for the Ethnicity variable in data_1
+unique(data_1$Ethnicity)
+data_1$Ethnicity <- as.factor(data_1$Ethnicity)
+class(data_1$Ethnicity)
+
+
+data_1$Ethnicity <- factor((data_1$Ethnicity),
+                           levels = c("Asian", "European", "Indian", 
+                                      "Maori", "Not Stated", "Other Ethnicities",
+                                      "Pacific Island" ))
+levels(data_1$Ethnicity)
+```
+
+```{r cleaning and sorting the police district variables, include=FALSE}
+#for the Police.District variable from data_2
+unique(data_2$Police.District)
+data_2$Police.District <- as.factor(data_2$Police.District)
+class(data_2$Police.District)
+
+levels(data_2$Police.District)
+data_2$Police.District <- factor((data_2$Police.District),
+                           levels = c("Auckland City", "Bay of Plenty", "Central",
+                                      "Canterbury", "Counties/Manukau", "Eastern","Southern",
+                                      "Northland", "Tasman",
+                                      "Waitemata", "Waikato", "Wellington"))
+levels(data_2$Police.District)
+```
+### 3. Load the required packages to plot the graph of choice.
+
+## (a) Year vs victimisations
+```{r plot between year vs victimisation, echo=FALSE}
+
+# Line graph plot between the Year vs Sex variables in data_1
+
+data_1 %>%
+  drop_na(SEX, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022))) %>%
+  group_by(SEX, Year) %>%
+  summarise(cnt = n(),
+            .groups = "keep") %>%
+  ggplot(aes(x=Year, y=cnt, group = SEX, color = SEX)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = cnt), vjust = 1.5, size =3) +
+  scale_color_manual(values = c("Male" = "orange",
+                                "Female" = "green")) +
+  
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 12, face = "bold"),
+        legend.position = "bottom",
+        legend.background = element_rect(fill = "gray95"),
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10)) +
+  labs(title = "cases of theft based on gender from 2017-2021",
+       x = "Year",
+       y = " Total theft related cases")
+
+```
+In the line graph shown above, we have chosen to compare the variables of sex with the years variable using two coloured lines green for male and orange for male. We also filtered out irrelevant years of 2014, 2015. 2016, 2022 and 2023 as we are only focusing on the year 2017 towards 2021. The reason being 2014 and 2023 has incomplete data and the rest being excluded so that the dept of analysis can be improved so that more high-quality data can be obtained while also reducing the level for biased data being gathered. Particularly, the highlight would be from 2019 to 2021 as this is during the heavy lockdown and poor economic conditions as a result of the lockdown. Due to this the level of details gathered during this time-frame would be very important in determining the level of theft related offenses in New Zealand.
+
+Based on the analysis shown on the line graph shown, a difference in shown among theft offenses between male and female. Throughout 2017 to 2021 we can see the difference of cases between male and female are quite high sitting at around 2000 to 3000 or more male related theft cases compared to female. Furthermore, the lines are shown to be not intercepting, this means the theft's done by male have no correlation/relation with the theft cases done by females they are independant. From the graph we can also say that from the year 2019 to 2021 the covid-19 pandemic has a huge impact oh the thefts done by male and females as we can see a sharp drop in cases when the pandemic started in 2019 to 2020 and then a sharp increase in 2021 as the lockdown prolonged.
+
+## (b) Age Group of offenders vs Year 
+```{r cases by Age Group, echo=FALSE}
+library(RColorBrewer) #we load packages 
+nb.cols <- 14
+My_colour <- colorRampPalette(brewer.pal(8, "Set3"))(nb.cols)
+
+data_1 %>%
+  drop_na(Age.Group, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022))) %>%
+  filter(!(Age.Group %in% c("0-4"))) %>%
+  ggplot(aes(Year, fill = Age.Group))+
+  geom_bar(position = "dodge",
+           alpha = 1, width = 0.9)+
+  scale_fill_manual(values = My_colour)+
+  labs(title = "cases of theft based on Age Group Between 2017-2021",
+       x = "Year",
+       y = "victims involved")
+
+
+
+
+
+```
+I utilized the "RColorBrewer" package to plot. Before plotting i changed the total number of columns allowed to 14 so that i can accommodate more age-group variables in my plot if needed, Also, i filtered out one of the age-group variables which is the age group of 0-4 due to the fact that most babies cant possibly attempt theft at such a young age simply saying its irrelevant in our analysis.
+
+In the bar chart above, the 15-19 age group stayed constant throughout 2017 to 2019 and then a sharp drop occurred in 2020 before increasing slightly again in 2021. We can also see that in the 4 year time-frame the age group with the highest theft related offenses continues to be from the 25-29 age group followed by 30-34 in second and 20-24 in third. Furthermore, we can see from the observation above that from the age-group of 60-64 all the way to anyone 80 and above that not much has changed in the distribution and cases are relatively uniform in this aspect. Overall, the main difference we can see are from 2019 to 2021 due to covid-19. 
+
+
+## (c) District in which theft happened vs Year
+```{r cases by demographic, echo=FALSE}
+
+data_2 %>%
+  drop_na(Police.District, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022, 2023))) %>%
+  ggplot(aes(Year, fill = Police.District))+
+  geom_bar(alpha = 1, width = 0.5)+
+  scale_fill_brewer(palette = "Paired") +
+  scale_x_discrete(guide = guide_axis(n.dodge=6))+
+  facet_wrap(~Police.District)+
+  labs(title = "Theft in police districts Between 2017-2021",
+       x = "Year of analysis from 2017-2021",
+       y = "Total theft related cases")
+
+
+  
+
+```
+
+In the bar graph above, i have separated the different district variables into smaller segments each with individual colours so that they can be differentiated better. To do so, i Used the **facet_wrap** function to split them individually into 11 segments. The data that is to be interpreted here would be from the police district variable in the **data_2** dataset.
+
+As shown clearly in the chart, the relationship between the population of a city and crime cases are highly related with each other, the more the population a city has the higher the chance of committing crime. Meanwhile, cities with lower populations are associated with lower amount of crimes committed, this is shown to be true as shown above smaller cities in the south island of New Zealand has a relatively low crime rate compared to the north as their populations are lower. However, from 2017 to 2021 we can see that the whole New Zealand crime rate are constantly increasing along with its population as the borders slowly open up after the covid-19 pandemic. overall, we can say that the population of a particular district has a positive correlation/relationship to the increasing cases of crime generally, Because the more people a district the higher the standard of living as well followed by hard lockdowns due to covid-19, people would have no choice but to commit crime in hopes of having food on the table and prevent the chance of going homeless.
+
+## (d) Ethnicity of offenders vs Year
+```{r cases by ethnic.Group, echo=FALSE}
+data_1 %>%
+  drop_na(Ethnicity, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022))) %>%
+  group_by(Ethnicity, Year) %>%
+  summarise(cnt = n(),
+            .groups = "keep") %>%
+  ggplot(aes(x=Year, y=cnt, group = Ethnicity, color = Ethnicity))+ 
+  geom_line()+
+  geom_point() +
+  geom_text(aes(label = cnt), vjust = -0.5, size = 4) +
+  
+  labs(title = "Theft Cases By Ethnicity from 2017-2021",
+       x = "Year",
+       y = "Cases")
+
+
+```
+
+When comparing the variables of ethnicity and year i have chosen to represent this data using line graph as it is easier and simpler to understand. After plotting the graph, we can see that majority of the crimes are committed by the maori, european and other non-stated ethnicities in New Zealand.
+
+When comparing europeans and maori to the other 3 ethnicities mentioned in the graph. Europeans consist of a broad aspect of people all over the world and with majority of New Zealand locals are identified as part europeans we can say that the reason for the high amount of crimes done by europeans is reasonable and valid in comparison with the maori as they are New Zealands second highest ethnic-group on New Zealand in comparison with other ethnicities. We can also say that due to the main population of New Zealand being of a certain european descent and the maori being the 2nd highest populated ethnic-group of New Zealand's population that from 2017 to 2021 these two main ethnicities remain the highest in terms of crimes committed with a sharp drop in 2019 to 2020 and increasing to 2021 as the covid-19 lockdown prolonged and worsening of the New Zealand economy.
+
+While we can see that the other ethnicities of asian, indian and pacific islander  remain constant we little to no deviation of the trends of committing crime. Furthermore, due to confidentiality of information many cases of theft committed by offenders in New Zealand has not been stated clearly which is why the "not stated" category of offenders ethnicities are relatively high. More information is needed to distinguish the ethnicities these offenders belong to which ethnic groups. However, as u can see form the trend on the line graph it supports my findings that the cases are increasing indefinitely over a period of time.
+
+# Victimisation throughout 2017 - 2021
+```{r conclusion, echo=FALSE}
+
+data_1 %>%
+  drop_na(Victimisations, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022))) %>%
+  group_by(Victimisations, Year) %>%
+  summarise(cnt = n(),
+            .groups = "keep") %>%
+  ggplot(aes(x = Year, y = cnt, fill = Victimisations)) +
+  geom_col() +
+  scale_fill_gradient(low = "darkgreen", high = "red", limits = c(0, 1000)) +
+  theme_minimal() +
+  labs(title = "Theft Cases Between 2017-2021",
+       x = "Year",
+       y = "Cases")
+
+  
+ 
+```
+In conclusion, as shown in the graph above there is a high correlation/relationship associated between the theft's committed with the demographic variables inside **data1** and **data2** of age-group, ethnicities, sex, year and location/districts in New Zealand. And theft cases are very common in New Zealand and as the economy is worsening in 2023 as inflation are rising and economies are worsening the theft cases is expected to continue rising indefinitely.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Appendix
+
+```{r  echo=FALSE}
+data_2 %>%
+  drop_na(Police.District, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022, 2023))) %>%
+  filter(!(Police.District %in% c("Canterbury", "Tasman", "Eastern", "Southern", "Central"))) %>%
+  ggplot(aes(Year, fill = Police.District))+
+  geom_bar(alpha = 1, width = 0.5)+
+  scale_fill_brewer(palette = "Paired") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))+
+  facet_wrap(~Police.District)+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(title = "Theft cases from North Island police districts Between 2017-2021",
+       x = "Year of analysis from 2017-2021",
+       y = "Total theft related cases")
+```
+
+```{r  echo=FALSE}
+data_2 %>%
+  drop_na(Police.District, Year) %>%
+  filter(!(Year %in% c(2014, 2015, 2016, 2022, 2023))) %>%
+   filter(!(Police.District %in% c("Auckland City", "Counties/Manukau", "Northland", "Waitemata", "Waikato", "Wellington", "Eastern", "Southern", "Central"))) %>%
+  ggplot(aes(Year, fill = Police.District))+
+  geom_bar(alpha = 1, width = 0.5)+
+  scale_fill_brewer(palette = "Paired") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))+
+  facet_wrap(~Police.District)+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(title = "Theft cases from South Island police districts Between 2017-2021",
+       x = "Year of analysis from 2017-2021",
+       y = "Total theft related cases")
+
+
+```
+This is just an extra information to display my reasoning behind my report on (c), i have separated some of the districts between south and north island only and also excluded some more general districts like "central", "Eastern" and "Southern".As u can see from the result, the cases are increasing year by year as well proving my point that population and crime are positively correlated and if one increases so does the other.
+
+
+```{r echo=FALSE}
+data_1 %>%
+    drop_na(Victimisations, Year) %>%
+    filter(!(Year %in% c(2014, 2015, 2016, 2022))) %>%
+    group_by(Victimisations, Year) %>%
+    summarise(cnt = n(),
+              .groups = "keep") %>%
+    ggplot(aes(x=Year, y=cnt, group=Victimisations, colour=Victimisations))+
+    geom_line()+
+    geom_point()+
+    geom_text(aes(label = cnt), vjust = -0.5, size = 4) +
+    scale_color_gradient(low="blue", high="red") +
+    theme_minimal()+
+    labs(title = "Theft Cases Between 2017-2021",
+         x = "Year",
+         y = "Cases")
+
+```
+The line chart above is just an extra plotting method that can be used to display and support my argument that the relationship between the victimisation variable throughout the year variable of my experiment which is from 2017-2021 as shown in the conclusion's bar chart. The cases are shown with numbers at specific years to show the total cases at the time, giving us a clearer picture of the number of cases
+
